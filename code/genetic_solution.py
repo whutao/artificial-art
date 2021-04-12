@@ -29,6 +29,26 @@ def mutation(
     BPG: (int, int),
     USE_CUDA: bool
 ) -> (np.ndarray, np.ndarray):
+    """
+    Draw a triangle with random coordinates. 
+    The color is taken form palette.
+
+    Args:
+        param1: Target chromosome as a NumPy array.
+        param2: Source image as a NumPy array.
+        param3: Source image color palette.
+        param4: Source image height.
+        param5: Source image width.
+        param6: Source image padding (used for drawing).
+        param7: Drawer frame height.
+        param8: Drawer frame width.
+        param9: Threads per block (CUDA argument).
+        param10: Blocks per grid (CUDA argument).
+        param11: Flag - use CUDA or not.
+
+    Returns:
+        Mutated chromosome and its updated fitness.
+    """
     padd = image_padding
     fsh = int(height*np.random.rand()) - padd
     fsw = int(width*np.random.rand()) - padd
@@ -100,6 +120,27 @@ def run_generation(
     BPG: (int, int),
     USE_CUDA: bool
 ) -> (np.ndarray, np.ndarray):
+    """
+    Execute one generation using genetic approach.
+
+    Args:
+        param1: Current generation as a NumPy array.
+        param2: Current fitnesses as a Numpy array.
+        param3: Population size.
+        param3: Source image as a NumPy array.
+        param4: Source image color palette.
+        param5: Source image height.
+        param6: Source image width.
+        param7: Source image padding (used for drawing).
+        param8: Drawer frame height.
+        param9: Drawer frame width.
+        param10: Threads per block (CUDA argument).
+        param11: Blocks per grid (CUDA argument).
+        param12: Flag - use CUDA or not.
+
+    Returns:
+        Next generation and its fitnesses.
+    """
     next_gen = np.empty_like(current_gen)
     next_fitnesses = np.empty_like(current_fitnesses)
 
@@ -155,7 +196,31 @@ def run_epoch(
     TPB: (int, int),
     BPG: (int, int),
     USE_CUDA: bool
-) -> (np.ndarray, np.ndarray):
+) -> (np.ndarray, np.ndarray, np.ndarray, np.ndarray):
+    """
+    Execute one epoch - a sequence of generations.
+
+    Args:
+        param1: Current generation as a NumPy array.
+        param2: Current fitnesses as a Numpy array.
+        param3: Epoch duration (number of generations).
+        param4: Population size.
+        param5: Source image as a NumPy array.
+        param6: Source image color palette.
+        param7: Source image height.
+        param8: Source image width.
+        param9: Source image padding (used for drawing).
+        param10: Drawer frame height.
+        param11: Drawer frame width.
+        param12: Threads per block (CUDA argument).
+        param13: Blocks per grid (CUDA argument).
+        param14: Flag - use CUDA or not.
+
+    Returns:
+        The most recent generation and its fitnesses.
+        Also, returns a list of execution times
+        and best fitnesses for each generation in epoch.
+    """
     gen_fitnesses = np.empty(shape=(epoch_duration,), dtype=np.float64)
     gen_times = np.empty(shape=(epoch_duration,), dtype=np.float64)
     for i in range(epoch_duration):
@@ -191,6 +256,22 @@ def run_evolution(
     canvas: np.ndarray = None,
     USE_CUDA: bool = False
 ) -> None:
+    """
+    Apply genetic algorithm to find the source image approximation.
+
+    Args:
+        param1: Path to the source image.
+        param2: Path to dir with results.
+        param3: Epoch duration (number of generations).
+        param4: Epoch count.
+        param5: Fitness limit (lowerbound).
+        param6: Population size.
+        param7: Initial canvas.
+        param8: Flag - use CUDA or not.
+
+    Returns:
+        Nothing. Results are stored in save_dir.
+    """
     source_image = open_image(source_image_path)
     height, width, _ = source_image.shape
     palette = extract_palette(source_image_path)
