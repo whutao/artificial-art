@@ -38,7 +38,7 @@ def kernel_draw_triangle(
     """
     CUDA kernel for drawing a triangle on a given image.
 
-    Triangle points should be in the form 
+    Triangle points should be in the form
     np.array([[Ax, Ay], [Bx, By], [Cx, Cy]], dtype=int).
 
     Color should be in the form
@@ -48,14 +48,14 @@ def kernel_draw_triangle(
     np.array(shape=(HEIGHT, WIDTH, 3), dtype=np.uint8).
 
     Result image should be in the form
-    np.empty(shape=(HEIGHT, WIDTH, 3), dtype=np.uint8). 
+    np.empty(shape=(HEIGHT, WIDTH, 3), dtype=np.uint8).
 
-    Fitness vector (that is flattened fitness matrix) 
+    Fitness vector (that is flattened fitness matrix)
     should be in the form
-    np.empty(shape=(HEIGHT*WIDTH,), dtype=np.float64). 
-    For each pixel, the fitness is a ratio of 
-    Euclidian distance to the original pixel and 
-    the largest Euclidian distance between two pixels. 
+    np.empty(shape=(HEIGHT*WIDTH,), dtype=np.float64).
+    For each pixel, the fitness is a ratio of
+    Euclidian distance to the original pixel and
+    the largest Euclidian distance between two pixels.
 
 
     Args:
@@ -67,7 +67,7 @@ def kernel_draw_triangle(
         param6: Fitness vector.
 
     Returns:
-        Returns nothing. 
+        Returns nothing.
         Modifies target image and fitness vector.
     """
     # GPU thread coordinates = pixel coordinates
