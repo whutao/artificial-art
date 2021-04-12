@@ -26,7 +26,8 @@ def mutation(
     frame_height: int,
     frame_width: int,
     TPB: (int, int),
-    BPG: (int, int)
+    BPG: (int, int),
+    USE_CUDA: bool
 ) -> (np.ndarray, np.ndarray):
     padd = image_padding
     fsh = int(height*np.random.rand()) - padd
@@ -43,25 +44,43 @@ def mutation(
     idx = np.random.randint(palette.shape[0])
     color = palette[idx]
 
-    pts_global_mem = cuda.to_device(pts)
-    color_global_mem = cuda.to_device(color)
-    source_img_global_mem = cuda.to_device(source_image)
-    target_img_global_mem = cuda.to_device(chromosome)
-    result_image_global_mem = cuda.device_array(
-        shape=(height, width, 3), dtype=np.uint8)
-    fitness_vector_global_mem = cuda.device_array(
-        shape=(height*width,), dtype=np.float64)
+    if USE_CUDA:
+        pts_global_mem = cuda.to_device(pts)
+        color_global_mem = cuda.to_device(color)
+        source_img_global_mem = cuda.to_device(source_image)
+        target_img_global_mem = cuda.to_device(chromosome)
+        result_image_global_mem = cuda.device_array(
+            shape=(height, width, 3), dtype=np.uint8)
+        fitness_vector_global_mem = cuda.device_array(
+            shape=(height*width,), dtype=np.float64)
 
-    kernel_draw_triangle[BPG, TPB](
-        pts_global_mem,
-        color_global_mem,
-        source_img_global_mem,
-        target_img_global_mem,
-        result_image_global_mem,
-        fitness_vector_global_mem)
+        kernel_draw_triangle[BPG, TPB](
+            pts_global_mem,
+            color_global_mem,
+            source_img_global_mem,
+            target_img_global_mem,
+            result_image_global_mem,
+            fitness_vector_global_mem)
 
-    new_chromosome = result_image_global_mem.copy_to_host()
-    new_fitness = kernel_sum_reduce(fitness_vector_global_mem)
+        new_chromosome = result_image_global_mem.copy_to_host()
+        new_fitness = kernel_sum_reduce(fitness_vector_global_mem)
+    else:
+        new_chromosome = np.copy(chromosome).astype(np.uint8)
+        Ax, Ay = pts[0]
+        Bx, By = pts[1]
+        Cx, Cy = pts[2]
+
+        for Px in range(max(0, fsh), min(fsh+frame_height+padd, height)-1):
+            for Py in range(max(0, fsw), min(fsw+frame_width+padd, width)-1):
+                ABC = abs(Ax*(By-Cy) + Bx*(Cy-Ay) + Cx*(Ay-By))
+                ABP = abs(Ax*(By-Py) + Bx*(Py-Ay) + Px*(Ay-By))
+                APC = abs(Ax*(Py-Cy) + Px*(Cy-Ay) + Cx*(Ay-Py))
+                PBC = abs(Px*(By-Cy) + Bx*(Cy-Py) + Cx*(Py-By))
+                if ABC == ABP + APC + PBC:
+                    new_chromosome[Px, Py] = (
+                        color + new_chromosome[Px, Py]) // 2
+
+        new_fitness = np.sum(((new_chromosome - source_image)/255)**2)
 
     return new_chromosome, new_fitness
 
@@ -78,7 +97,8 @@ def run_generation(
     frame_height: int,
     frame_width: int,
     TPB: (int, int),
-    BPG: (int, int)
+    BPG: (int, int),
+    USE_CUDA: bool
 ) -> (np.ndarray, np.ndarray):
     next_gen = np.empty_like(current_gen)
     next_fitnesses = np.empty_like(current_fitnesses)
@@ -110,7 +130,8 @@ def run_generation(
             frame_height=frame_height,
             frame_width=frame_width,
             TPB=TPB,
-            BPG=BPG)
+            BPG=BPG,
+            USE_CUDA=USE_CUDA)
 
         next_gen[i] = successor
         next_fitnesses[i] = successor_fitness
@@ -132,7 +153,8 @@ def run_epoch(
     frame_height: int,
     frame_width: int,
     TPB: (int, int),
-    BPG: (int, int)
+    BPG: (int, int),
+    USE_CUDA: bool
 ) -> (np.ndarray, np.ndarray):
     gen_fitnesses = np.empty(shape=(epoch_duration,), dtype=np.float64)
     gen_times = np.empty(shape=(epoch_duration,), dtype=np.float64)
@@ -149,7 +171,8 @@ def run_epoch(
             frame_height=frame_height,
             frame_width=frame_width,
             TPB=TPB,
-            BPG=BPG)
+            BPG=BPG,
+            USE_CUDA=USE_CUDA)
 
         gen_fitnesses[i] = current_fitnesses[0]
         gen_times[i] = time.time()
@@ -165,7 +188,8 @@ def run_evolution(
     epoch_count: int = None,
     fitness_limit: float = None,
     population_size: int = None,
-    canvas: np.ndarray = None
+    canvas: np.ndarray = None,
+    USE_CUDA: bool = False
 ) -> None:
     source_image = open_image(source_image_path)
     height, width, _ = source_image.shape
@@ -227,7 +251,8 @@ def run_evolution(
             frame_height=frame_height,
             frame_width=frame_width,
             TPB=TPB,
-            BPG=BPG)
+            BPG=BPG,
+            USE_CUDA=USE_CUDA)
 
         best_candidate = population[0]
         best_fitness = fitnesses[0]
