@@ -67,7 +67,7 @@ def open_image(filepath: str) -> np.ndarray:
         ValueError: File extention is inappropriate.
     """
     filebasename = os.path.basename(filepath)
-    extention = os.path.splitext(filename)[1]
+    extention = os.path.splitext(filebasename)[1]
     if extention == '.jpg':
         return plt.imread(filepath)
     elif extention == '.png':
