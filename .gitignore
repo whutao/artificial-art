@@ -1,0 +1,16 @@
+# Project related 
+results
+
+
+# Python cache
+**/__pycache__
+
+# Virtual environment
+.venv
+venv
+
+# macOS filesystem splecial file
+**/.DS_Store
+
+# Visual Studio Code settings
+.vscode
