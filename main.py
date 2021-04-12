@@ -1,5 +1,5 @@
 if __name__ == '__main__':
-    from code.genetic_solution import run_evolution
+    from code.evolutionary_solution import run_evolution
 
     image_files = [
         'source_images/at the hockey - resize.jpg',
