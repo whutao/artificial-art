@@ -121,7 +121,7 @@ def run_generation(
     USE_CUDA: bool
 ) -> (np.ndarray, np.ndarray):
     """
-    Execute one generation using genetic approach.
+    Execute one generation using evolutionary approach.
 
     Args:
         param1: Current generation as a NumPy array.
@@ -257,7 +257,7 @@ def run_evolution(
     USE_CUDA: bool = False
 ) -> None:
     """
-    Apply genetic algorithm to find the source image approximation.
+    Apply evolutionary algorithm to find the source image approximation.
 
     Args:
         param1: Path to the source image.
