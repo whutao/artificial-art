@@ -151,8 +151,8 @@ def epoch_snapshot(
 
     figure_dir = os.path.join(save_dir, 'figure')
     os.makedirs(figure_dir, exist_ok=True)
-    figure_filename = os.path.join(figure_dir, f'figure_G{gen_id}.jpg')
-    plt.savefig(figure_filename, bbox_inches='tight')
+    figure_filepath = os.path.join(figure_dir, f'figure_G{gen_id}.jpg')
+    plt.savefig(figure_filepath, bbox_inches='tight')
     plt.close('all')
 
     candidate_dir = os.path.join(save_dir, 'candidate')
@@ -163,15 +163,19 @@ def epoch_snapshot(
 
     other_dir = os.path.join(save_dir, 'other')
     os.makedirs(other_dir, exist_ok=True)
-    palette_filename = os.path.join(other_dir, 'palette.jpg')
-    if not os.path.exists(palette_filename):
+    palette_filepath = os.path.join(other_dir, 'palette.jpg')
+    if not os.path.exists(palette_filepath):
         fig = plt.figure(figsize=(2*palette.shape[0], 5))
         plt.subplot(1, 1, 1)
         plt.axis('off')
         plt.title('Color palette', fontdict={'fontsize': 28})
         plt.imshow([palette])
-        plt.savefig(palette_filename, bbox_inches='tight')
+        plt.savefig(palette_filepath, bbox_inches='tight')
         plt.close('all')
+
+    source_image_filepath = os.path.join(other_dir, 'source_img.jpg')
+    if not os.path.exists(source_image_filepath):
+        plt.imsave(source_image_filepath, source_image)
 
     fitness_path = os.path.join(other_dir, 'fitness.csv')
     with open(fitness_path, 'a') as fitness_file:
