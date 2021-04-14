@@ -2,7 +2,7 @@
 
 ## Source code
 
-Python source code can be found in `code/` fodler. It is provided with comments and docstrings. Before running the code, one should: 
+Python source code can be found in `code/` folder. It is provided with comments and docstrings. Before running the code, one should: 
 
 1. Have python 3.8+ version installed on their machine.
 2. Install the dependencies using `pip3 install -r requirements.txt`.
